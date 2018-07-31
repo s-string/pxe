@@ -1,9 +1,9 @@
-FROM stackbrew/debian:jessie
+FROM debian:stretch-slim
 ENV ARCH amd64
 ENV DIST stretch
-ENV MIRROR http://ftp.nl.debian.org
+ENV MIRROR http://ftp.hk.debian.org
 RUN apt-get -q update
-RUN apt-get -qy install dnsmasq wget iptables
+RUN apt-get -qy install dnsmasq wget iptables iproute2
 RUN wget --no-check-certificate https://raw.github.com/jpetazzo/pipework/master/pipework
 RUN chmod +x pipework
 RUN mkdir /tftp
@@ -11,8 +11,10 @@ WORKDIR /tftp
 RUN wget $MIRROR/debian/dists/$DIST/main/installer-$ARCH/current/images/netboot/debian-installer/$ARCH/linux
 RUN wget $MIRROR/debian/dists/$DIST/main/installer-$ARCH/current/images/netboot/debian-installer/$ARCH/initrd.gz
 RUN wget $MIRROR/debian/dists/$DIST/main/installer-$ARCH/current/images/netboot/debian-installer/$ARCH/pxelinux.0
-RUN mkdir pxelinux.cfg
-RUN printf "DEFAULT linux\nLABEL linux\nKERNEL linux\nAPPEND initrd=initrd.gz\n" >pxelinux.cfg/default
+RUN wget MIRROR/debian/dists/$DIST/main/installer-$ARCH/current/images/netboot/netboot.tar.gz; \
+    tar zxvf netboot.tar.gz
+#RUN mkdir pxelinux.cfg
+#RUN printf "DEFAULT linux\nLABEL linux\nKERNEL linux\nAPPEND initrd=initrd.gz\n" >pxelinux.cfg/default
 CMD \
     echo Setting up iptables... &&\
     iptables -t nat -A POSTROUTING -j MASQUERADE &&\
